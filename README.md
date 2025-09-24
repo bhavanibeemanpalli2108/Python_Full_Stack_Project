@@ -110,8 +110,8 @@ pip install -r requirements.txt
 - Go to the SQL Editor in  your Supabase
 -Run this SQL command
 
---- 
-    sql
+
+```   sql
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
@@ -150,7 +150,7 @@ CREATE TABLE IF NOT EXISTS reminders (
     created_at TIMESTAMP DEFAULT now()
 );
 
-
+```
 
 3.**Get your  credentials
 
