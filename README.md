@@ -58,24 +58,40 @@ The platform is designed to be **dynamic** and **scalable**:
 
 SmartNotify/
 │
-|---src/                # Core application  logic
-|   |---logic.py        # Business logic and task
-operations
-|   |---db.py           # Database operations
-|
-|---api/                # BACKEND API
-|   |---main.py         # FASTAPI endpoints
-|
-|---frontend/           # FRONTEND APPLICATION
-|   |---app.py          # STREAMLIT WEB INTERFACE
-|
-|_____requirements.txt  # PYTHON DEPENDENCIES
-|
-|
-|_____README.md         # Project doumentation
-|
-|
-|_____.env              # PYTHON VARIABLES
+├── src/                        # Core backend application logic
+│   ├── logic.py                 # Business logic & task operations
+│   │   - Validates reminder requests
+│   │   - Handles scheduling, retry logic, and message formatting
+│   │   - Connects with notifier (WhatsApp, Email, SMS)
+│   │
+│   └__ db.py                    # Database operations
+│       - Manages Supabase/Postgres connections
+│       - CRUD for users, reminders, channels, logs
+│       - Ensures schema consistency
+│
+├__ api/                        # Backend API (FastAPI)
+│   |__ main.py                  # API endpoints
+│       - Provides REST routes (create reminder, list reminders, fetch logs, etc.)
+│       - Integrates src/logic.py and src/db.py
+│       - Handles request/response cycle
+│
+|__ frontend/                    # Optional frontend (Streamlit)
+│   └── app.py                   # Simple UI dashboard
+│       - User-friendly interface for reminders
+│       - Creates reminders (recipient + channel + time)
+│       - Displays logs and statuses
+│
+|__ requirements.txt            # Python dependencies
+│   - Lists all packages (supabase, fastapi, streamlit, uvicorn, schedule, twilio, etc.)
+│
+├── README.md                   # Project documentation
+│   - Overview, setup, usage, troubleshooting
+│   - Database schema and setup steps
+│
+└── .env                        # Environment variables
+    - Supabase URL + API Key
+    - Twilio/SMTP credentials
+    - Any secret keys
 
 
 
@@ -111,7 +127,7 @@ pip install -r requirements.txt
 -Run this SQL command
 
 
-```   sql
+```sql
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
@@ -159,8 +175,8 @@ CREATE TABLE IF NOT EXISTS reminders (
 1. Create a ".env" file in the project root
 
 2. Add your Supabase credentials to '.env':
-SUPABASE_URL="https://bcaasupopxyqhpbjcinl.supabase.co"
-SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjYWFzdXBvcHh5cWhwYmpjaW5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgwODEzMTksImV4cCI6MjA3MzY1NzMxOX0.ABgIgHsw34kGBXtK3x5hTcGbwHxLm042aYXJ48IfxkE"
+SUPABASE_URL=`https://bcaasupopxyqhpbjcinl.supabase.co`
+SUPABASE_KEY=`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjYWFzdXBvcHh5cWhwYmpjaW5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgwODEzMTksImV4cCI6MjA3MzY1NzMxOX0.ABgIgHsw34kGBXtK3x5hTcGbwHxLm042aYXJ48IfxkE`
 
 
 ###  5. Run the Application
