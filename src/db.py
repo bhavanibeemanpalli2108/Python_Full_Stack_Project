@@ -99,3 +99,13 @@ def get_logs(reminder_id: str = None):
 def delete_log(log_id: str):
     response = supabase.table("logs").delete().eq("id", log_id).execute()
     return response.data
+
+# #--------run------
+# if __name__ == "__main__":
+#     import uvicorn
+#     uvicorn.run("db:app", host="0.0.0.0",port=8000, reload=True)
+#     # print("Supabase client initialized.")
+#     # print("Users:", get_users())
+#     # print("Channels:", get_channels())
+#     # print("Reminders:", get_reminders())
+#     # print("Logs:", get_logs())
