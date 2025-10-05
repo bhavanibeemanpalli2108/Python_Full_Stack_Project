@@ -8,7 +8,7 @@ import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
 
 # Import Managers
-from logic import UserManager, ChannelManager, ReminderManager, LogManager
+from src.logic import UserManager, ChannelManager, ReminderManager, LogManager
 
 # ------------------- APP SETUP -------------------
 app = FastAPI(title="User Management API", version="1.0")

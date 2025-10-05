@@ -1,0 +1,34 @@
+# Virtual environment
+venv/
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE / Editor settings
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Streamlit or build caches
+.streamlit/
+build/
+dist/
+
+# Local databases or backup files
+*.db
+*.sqlite3
+
+# Supabase/credentials backup files
+secrets.json
+.env.*

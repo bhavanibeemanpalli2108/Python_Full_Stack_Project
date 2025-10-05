@@ -1,20 +1,24 @@
-streamlit>=1.29 #frontend  framwork for webpages
-supabase>=2.0.2 #supabase client for database operations
-fastapi>=0.104.1 #backend framework for APIs
-uvicorn>=0.24.0 #ASGI server for running FastAPI applications
-# pydantic>=2.10.9
-python-dotenv>=1.0.0 #to load environment variables from .env file
-# httpx>=0.24.1
-# requests>=2.32.3
-# openai>=0.27.8
-# langchain>=0.0.208
-# chromadb>=0.3.28
-# tiktoken>=0.4.0
-# beautifulsoup4>=4.12.2
-# lxml>=4.9.3
-# google-api-python-client>=2.100.0
-# google-auth>=2.22.0
-# google-auth-httplib2>=0.1.0
-# google-auth-oauthlib>=1.0.0
-# pandas>=2.1.4
-# numpy>=1.26.4
+# ---------- CORE ----------
+streamlit>=1.29
+supabase>=2.0.2
+fastapi>=0.104.1
+uvicorn>=0.24.0
+pydantic>=2.7.0
+python-dotenv>=1.0.0
+pandas>=2.1.4
+numpy>=1.26.4
+
+# ---------- OPTIONAL (uncomment if you add these features) ----------
+twilio>=9.0.0         # SMS/WhatsApp notifications
+requests>=2.32.3      # API calls
+httpx>=0.24.1         # Alternative to requests (async support)
+openai>=0.27.8        # AI features
+langchain>=0.0.208    # AI workflows
+# chromadb>=0.3.28      # Vector DB for AI memory
+# tiktoken>=0.4.0       # Tokenizer for OpenAI models
+# beautifulsoup4>=4.12.2 # Web scraping
+# lxml>=4.9.3           # HTML/XML parsing
+google-api-python-client>=2.100.0
+google-auth>=2.22.0
+google-auth-httplib2>=0.1.0
+google-auth-oauthlib>=1.0.0

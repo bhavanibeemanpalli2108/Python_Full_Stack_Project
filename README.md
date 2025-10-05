@@ -58,40 +58,57 @@ The platform is designed to be **dynamic** and **scalable**:
 
 SmartNotify/
 │
-├── src/                        # Core backend application logic
-│   ├── logic.py                 # Business logic & task operations
-│   │   - Validates reminder requests
-│   │   - Handles scheduling, retry logic, and message formatting
-│   │   - Connects with notifier (WhatsApp, Email, SMS)
-│   │
-│   └__ db.py                    # Database operations
-│       - Manages Supabase/Postgres connections
-│       - CRUD for users, reminders, channels, logs
-│       - Ensures schema consistency
+├── api/                                # Backend API Layer (FastAPI)
+│   ├── __init__.py
+│   └── main.py                         # Defines REST API endpoints
+│       - Routes for reminders, logs, and users
+│       - Integrates core logic and database modules
+│       - Manages request validation and responses
 │
-├__ api/                        # Backend API (FastAPI)
-│   |__ main.py                  # API endpoints
-│       - Provides REST routes (create reminder, list reminders, fetch logs, etc.)
-│       - Integrates src/logic.py and src/db.py
-│       - Handles request/response cycle
+├── frontend/                           # Frontend Application (Streamlit or Tkinter)
+│   ├── __init__.py
+│   └── app.py                          # UI logic for users
+│       - Interface for creating and managing reminders
+│       - Displays reminder status and logs
+│       - Connects with backend API endpoints
 │
-|__ frontend/                    # Optional frontend (Streamlit)
-│   └── app.py                   # Simple UI dashboard
-│       - User-friendly interface for reminders
-│       - Creates reminders (recipient + channel + time)
-│       - Displays logs and statuses
+├── src/                                # Core Backend Logic
+│   ├── __init__.py
+│   ├── auth.py                         # User authentication and access control
+│   ├── db.py                           # Database operations (Supabase/PostgreSQL)
+│       - Handles CRUD for users, reminders, and logs
+│       - Manages database connections and schema integrity
+│   ├── logic.py                        # Core business logic
+│       - Validates reminder data
+│       - Handles retry logic and message formatting
+│       - Bridges between scheduler and notifiers
+│   ├── messaging.py                    # Central message routing
+│       - Determines the correct communication channel
+│       - Standardizes message payloads
+│   ├── scheduler.py                    # Background scheduling system
+│       - Scans pending reminders
+│       - Triggers notification dispatch at the right time
+│       - Includes retry and failure handling
+│   ├── utils.py                        # Utility/helper functions
+│       - Date/time conversions, logging, formatting, etc.
 │
-|__ requirements.txt            # Python dependencies
-│   - Lists all packages (supabase, fastapi, streamlit, uvicorn, schedule, twilio, etc.)
+│   └── notifiers/                      # Multi-channel notification handlers
+│       ├── __init__.py
+│       ├── whatsapp.py                 # WhatsApp integration (Twilio API)
+│       ├── email.py                    # Email integration (SMTP or other API)
+│       └── sms.py                      # SMS integration (Twilio or other gateway)
 │
-├── README.md                   # Project documentation
-│   - Overview, setup, usage, troubleshooting
-│   - Database schema and setup steps
+├── .env                                # Environment variables
+│   - API keys, database credentials, and service tokens
 │
-└── .env                        # Environment variables
-    - Supabase URL + API Key
-    - Twilio/SMTP credentials
-    - Any secret keys
+├── requirements.txt                    # Python dependencies
+│   - fastapi, streamlit, supabase, twilio, schedule, etc.
+│
+├── README.md                           # Project documentation
+│   - Overview, setup, API usage, and deployment guide
+│
+└── venv/                               # Virtual environment (excluded from version control)
+
 
 
 

@@ -1,14 +1,121 @@
 # src/logic.py
+import datetime, schedule, time
+from datetime import timezone
+#from src.db import DatabaseManager  # relative import
+from src import db                 # relative import
+# from twilio.rest import Client as TwilioClient
+import smtplib
+from email.mime.text import MIMEText
+import os
+from dotenv import load_dotenv
+load_dotenv()
+import datetime
+from src.db import get_due_reminders, update_reminder_status
+from src.notifiers.email import send_email
+from src.notifiers.sms import send_sms
+from src.notifiers.whatsapp import send_whatsapp
+from src.db import create_reminder, get_channels, create_log
 
-from src.db import DatabaseManager
-from datetime import datetime, timedelta
+from datetime import datetime, timezone
+from src.db import create_reminder, get_due_reminders, update_reminder_status, create_log
+# src/logic.py (update process_due_reminders)
+from datetime import datetime
+from src.db import get_due_reminders, update_reminder_status, get_channels, create_log
+from src.messaging import send_message
+from datetime import timezone
+import pytz
+from dateutil import parser
+
+def process_due_reminders():
+    from src.messaging import send_message
+
+    # fetch channels and make a mapping: id -> channel_type
+    channels_list = get_channels()  # list of dicts
+    channels = {c['id']: c['name'].lower() for c in channels_list}
+
+    due_reminders = get_due_reminders()
+    for r in due_reminders:
+        try:
+            channel_type = channels.get(r['channel_id'])
+            if not channel_type:
+                raise ValueError(f"Unknown channel_id {r['channel_id']}")
+
+            recipient = r['recipient']
+            message = f"Hi {r['recipient_name']},\n{r['message']}"
+
+            send_message(recipient, message, channel=channel_type)
+
+            update_reminder_status(r['id'], "sent")
+            create_log(r['id'], "sent", f"Sent via {channel_type}")
+            print(f"✅ Reminder sent to {recipient} via {channel_type}")
+
+        except Exception as e:  
+            update_reminder_status(r['id'], "failed")
+            create_log(r['id'], "failed", str(e))
+            print(f"❌ Failed reminder {r['id']}: {str(e)}")
+        
+            
+# # process due reminders    
+    
+#     def process_due_reminders():
+#         """
+#         Fetch due reminders and send them via the appropriate channel.
+#         """
+#         from src.messaging import send_message  # your existing function
+#         channels = ... # get channels mapping from DB
+
+#         due_reminders = get_due_reminders()
+#         for r in due_reminders:
+#             try:
+#                 channel_type = channels.get(r['channel_id'])
+#                 recipient = r['recipient']
+#                 message = f"Hi {r['recipient_name']},\n{r['message']}"
+
+#                 send_message(recipient, message, channel=channel_type)
+
+#                 update_reminder_status(r['id'], "sent")
+#                 create_log(r['id'], "sent", f"Sent via {channel_type}")
+#                 print(f"✅ Reminder sent to {recipient} via {channel_type}")
+
+#             except Exception as e:
+#                 update_reminder_status(r['id'], "failed")
+#                 create_log(r['id'], "failed", str(e))
+#                 print(f"❌ Failed reminder {r['id']}: {str(e)}")
+# Schedule the job every minute
+
+# --- WhatsApp/SMS via Twilio ---
+# def send_sms_whatsapp(to, message, channel="sms"):
+#     account_sid = os.getenv("TWILIO_SID")
+#     auth_token = os.getenv("TWILIO_AUTH")
+#     from_whatsapp = f"whatsapp:{os.getenv('TWILIO_WHATSAPP')}"
+#     from_sms = os.getenv("TWILIO_PHONE")
+
+#     client = TwilioClient(account_sid, auth_token)
+
+#     sender = from_whatsapp if channel == "whatsapp" else from_sms
+#     msg = client.messages.create(body=message, from_=sender, to=to)
+#     return msg.sid
+
+# --- Email ---
+# def send_email(to, subject, body):
+#     user = os.getenv("EMAIL_USER")
+#     password = os.getenv("EMAIL_PASS")
+#     msg = MIMEText(body)
+#     msg["Subject"] = subject
+#     msg["From"] = user
+#     msg["To"] = to
+
+#     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+#         server.login(user, password)
+#         server.sendmail(user, [to], msg.as_string())
 
 class UserManager:
     """Acts as a bridge between frontend(Streamlit/FASTAPI) and database."""
 
     def __init__(self):
-        # create a database manager instance (this will handle actul db operations).
-        self.db = DatabaseManager()
+        # no DatabaseManager, we use db functions directly
+        import src.db as db
+        self.db = db
 
 # ---------------- USER OPERATIONS ----------------
     # add user
@@ -73,8 +180,10 @@ class ChannelManager:
     # add channel
 
     def __init__(self):
-        # create a database manager instance (this will handle actul db operations).
-        self.db = DatabaseManager()
+        # no DatabaseManager, we use db functions directly
+        import src.db as db
+        self.db = db
+
 
     def add_channel(self, name: str, description: str = None):
         """Add a new channel to the system.
@@ -138,26 +247,74 @@ class ReminderManager:
     """Handles reminder-related operations."""
 
     def __init__(self):
-        # create a database manager instance (this will handle actul db operations).
-        self.db = DatabaseManager()
+        # no DatabaseManager, we use db functions directly
+        import src.db as db
+        self.db = db
 
 
     # add reminder
-    def add_reminder(self, user_id: str, recipient_name: str, recipient: str, message: str, channel_id: int, event_time: str):
-        """Add a new reminder to the system.
-        Returns a success message or error based on the activity."""
-        if not user_id or not recipient_name or not recipient or not message or not channel_id or not event_time:
-            return{"Success": False, "Message": "All fields except optional ones are required."}   
-        
-        # call db function to create reminder
-        result= self.db.create_reminder(user_id, recipient_name, recipient, message, channel_id, event_time)
+    # def add_reminder(self, user_id, recipient_name, recipient, message, channel_id, event_time):
+    #     result = create_reminder(user_id, recipient_name, recipient, message, channel_id, event_time)
+    #     # return result
 
-        # check if reminder creation was successful
-        if result.get("Success"):
-            return {"Success": True, "Message": "Reminder created successfully."}
-        else:
-            return {"Success": False, "Message": f"Error:{result.get('Error')}"}
-        
+
+    #     # Supabase usually returns a list of inserted rows
+    #     if isinstance(result, list) and len(result) > 0:
+    #         return {"Success": True, "data": result[0]}
+    #     elif isinstance(result, dict) and result.get("Success"):
+    #         return result
+    #     else:
+    #         return {"Success": False, "Error": "Failed to insert reminder"}
+
+
+    from datetime import datetime, timezone
+    from dateutil import parser
+    import pytz
+
+    def add_reminder(self, user_id, recipient_name, recipient, message, channel_id, event_time):
+        """
+        Adds a reminder to the database.
+        Assumes event_time is in IST (local time) and converts it to UTC for DB.
+        """
+        try:
+            # Parse event_time (string → datetime)
+            if isinstance(event_time, str):
+                try:
+                    event_dt = parser.parse(event_time)
+                except Exception:
+                    raise ValueError(f"Invalid datetime format: {event_time}")
+            elif isinstance(event_time, datetime):
+                event_dt = event_time
+            else:
+                raise TypeError("event_time must be a string or datetime")
+
+            # Step 1: Attach IST timezone if missing
+            ist = pytz.timezone("Asia/Kolkata")
+            if event_dt.tzinfo is None:
+                event_dt = ist.localize(event_dt)
+
+            # Step 2: Convert to UTC for storage
+            event_time_utc = event_dt.astimezone(pytz.utc).isoformat()
+
+            # 🧠 Debug logs
+            print("🕒 Local input:", event_time)
+            print("IST localized:", event_dt)
+            print("UTC stored:", event_time_utc)
+
+            # Step 3: Store in DB
+            result = create_reminder(user_id, recipient_name, recipient, message, channel_id, event_time_utc)
+
+            if result:
+                return {"Success": True, "Message": "Reminder created successfully!", "Data": result[0]}
+            else:
+                return {"Success": False, "Message": "Failed to insert reminder."}
+
+        except Exception as e:
+            return {"Success": False, "Message": f"Error: {str(e)}"}
+
+
+
+    
 
     # -------Retrieve-------
     def list_reminders(self, user_id: str = None):
@@ -206,9 +363,12 @@ class ReminderManager:
 # ---------------- LOG OPERATIONS ----------------
 class LogManager:
     """Handles log-related operations."""
+
     def __init__(self):
-        # create a database manager instance (this will handle actul db operations).
-        self.db = DatabaseManager()
+        # no DatabaseManager, we use db functions directly
+        import src.db as db
+        self.db = db
+
     # add log
 
     def log_reminder_activity(self, reminder_id: str, status: str, response_text: str = None):
@@ -245,3 +405,5 @@ class LogManager:
             return {"Success": True, "Message": "Log deleted successfully."}
         else:
             return {"Success": False, "Message": f"Error: {result.get('Error')}"}
+        
+        
